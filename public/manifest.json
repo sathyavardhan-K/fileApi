@@ -1,9 +1,37 @@
 {
-    "name": "React DomoApp",
+    "name": "fileUploader",
     "version": "0.0.1",
     "size": {
         "width": 3,
         "height": 3
     },
-    "mapping": []
+    "mapping": [],
+    "collections": [
+    {
+      "name": "fileUploader",
+      "schema":{
+        "columns": [
+          {
+            "name": "fileId", 
+            "type": "STRING" 
+          },
+          {
+            "name": "fileName", 
+            "type": "STRING"
+          },
+          {
+            "name": "fileSize", 
+            "type": "STRING"
+          },
+          {
+            "name": "owner", 
+            "type": "STRING"
+          }
+        ]
+      },
+      "syncEnabled":true  
+    }
+  ],
+    "id": "50fadc13-75aa-423a-8f93-d18718eac48b",
+    "proxyId": "680685e1-3f00-4af9-8737-15e6c7e8f7e7"
 }
