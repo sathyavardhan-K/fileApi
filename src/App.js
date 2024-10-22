@@ -6,7 +6,7 @@ import FileUpload from './Components/fileDropping'
 function App() {
   return (
    <>
-  <FileUpload/>
+    <FileUpload/>
    </>
   )
 }

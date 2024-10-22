@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import DomoApi from './api';
+import DomoApi from '../Domoapi/Api';
+import FileTable from './table';
 
 const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
   const [fileList, setFileList] = useState([]);
-
- 
 
   // Handle file drop
   const onDrop = useCallback((acceptedFiles) => {
@@ -20,7 +19,7 @@ const FileUpload = () => {
     multiple: false,
   });
 
-  // handleUpload
+  // handleUpload function
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!selectedFile) {
@@ -31,14 +30,14 @@ const FileUpload = () => {
     try {
       const res = await DomoApi.UploadFile(selectedFile, "filename", "ajsdi", true);
       const fileId = res.dataFileId;
-      console.log("fileId from upload:", fileId);
-
-      
       if (fileId) {
-        const docRes = await DomoApi.CreateDocument('File-uploded', { fileId });
+        await DomoApi.CreateDocument('fileUploader', { fileId });
         setUploadStatus('File uploaded successfully!');
+
+        // Update the file list with the new file details
+        setFileList([...fileList, { id: fileId, name: selectedFile.name, size: selectedFile.size }]);
       } else {
-        console.error("No fileId found in upload response.");
+        setUploadStatus('Error uploading file.');
       }
     } catch (error) {
       setUploadStatus('Error uploading file.');
@@ -46,19 +45,8 @@ const FileUpload = () => {
     }
   };
 
-  // handleDelete
-  const handleDelete = async (fileId) => {
-    try {
-      const response = await DomoApi.DeleteDocument('your-collection-name', fileId); 
-      if (response.status === 200) {
-        setUploadStatus('File deleted successfully!');
-        setFileList(fileList.filter((file) => file.id !== fileId)); 
-      }
-    } catch (error) {
-      setUploadStatus('Error deleting file.');
-      console.error('Error deleting file:', error);
-    }
-  };
+  // handleDelete function
+  
 
   return (
     <div className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg mt-10">
@@ -90,23 +78,8 @@ const FileUpload = () => {
         </p>
       )}
 
-      {/* List of uploaded files */}
-      <div className="mt-6">
-        <h4 className="text-lg font-bold mb-2">Uploaded Files</h4>
-        <ul className="space-y-2">
-          {fileList.map((file) => (
-            <li key={file?.id} className="flex justify-between items-center bg-gray-100 p-2 rounded-md">
-              <span>{file?.name}</span>
-              <button
-                onClick={() => handleDelete(file?.id)}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition duration-300"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+     
+      <FileTable recentFiles={fileList} />
     </div>
   );
 };
