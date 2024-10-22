@@ -1,13 +1,12 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-
+import FileUpload from './Components/fileDropping'
 function App() {
   return (
-    <div className="bg-slate-400">
-      hello
-  
-    </div>
+   <>
+  <FileUpload/>
+   </>
   );
 }
 
