@@ -41,15 +41,18 @@ const CreateDocument = (collectionName, document) => {
 };
 
 const ListDocuments = (collectionName) => {
-  return domo
-    .get(`${BASE_URL}/collections/${collectionName}/documents/`)
-    .then((response) => response)
-    .catch((error) => {
-      console.error('Error listing documents:', error);
-      throw error;
-    });
-};
-
+    return domo
+      .get(`${BASE_URL}/collections/${collectionName}/documents/`)
+      .then((response) => {
+        console.log('ListDocuments Response:', response); // Log the entire response
+        return response; // Ensure this is the correct path to your data
+      })
+      .catch((error) => {
+        console.error('Error listing documents:', error);
+        throw error;
+      });
+  };
+  
 const GetDocument = (collectionName, documentId) => {
   return domo
     .get(`${BASE_URL}/collections/${collectionName}/documents/${documentId}`)

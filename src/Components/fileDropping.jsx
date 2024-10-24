@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import DomoApi from '../Domoapi/Api';
 import FileTable from './table';
@@ -7,6 +7,7 @@ const FileUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
   const [fileList, setFileList] = useState([]);
+  
 
   // Handle file drop
   const onDrop = useCallback((acceptedFiles) => {
@@ -19,7 +20,32 @@ const FileUpload = () => {
     multiple: false,
   });
 
-  // handleUpload function
+  // Fetch existing documents when the component mounts
+useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const documents = await DomoApi.ListDocuments('fileUploader');
+        console.log("documents",documents);
+        
+        // Check if documents is defined and is an array
+        const formattedDocuments = documents.map(doc => ({
+              id: doc.fileId,  // Assuming this is the correct property
+              fileName: doc.content.fileName, // Make sure to match the keys to your schema
+              fileSize: doc.content.fileSize, // Make sure to match the keys to your schema
+            }))
+          ;
+        setFileList(formattedDocuments);
+        console.log("formattedDocuments",formattedDocuments);
+        
+      } catch (error) {
+        console.error('Error fetching documents:', error);
+      }
+    };
+  
+    fetchDocuments();
+  }, []); // Empty dependency array to run once when the component mounts
+
+  // Handle upload function
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!selectedFile) {
@@ -28,25 +54,31 @@ const FileUpload = () => {
     }
 
     try {
-      const res = await DomoApi.UploadFile(selectedFile, "filename", "ajsdi", true);
-      const fileId = res.dataFileId;
-      if (fileId) {
-        await DomoApi.CreateDocument('fileUploader', { fileId });
-        setUploadStatus('File uploaded successfully!');
-
-        // Update the file list with the new file details
-        setFileList([...fileList, { id: fileId, name: selectedFile.name, size: selectedFile.size }]);
-      } else {
-        setUploadStatus('Error uploading file.');
-      }
-    } catch (error) {
-      setUploadStatus('Error uploading file.');
-      console.error('Error uploading file:', error);
-    }
-  };
-
-  // handleDelete function
+        const res = await DomoApi.UploadFile(selectedFile, "filename", "ajsdi", true);
+        const fileId = res.dataFileId;
+        if (fileId) {
+          // Gather the details to store
+          const fileDetails = {
+            fileId: fileId,
+            fileName: selectedFile.name,
+            fileSize: selectedFile.size.toString(), // Ensure it's a string
+            owner: "currentUserId" // Replace with the actual user ID
+          };
   
+          // Create a new document in the fileUploader collection
+          await DomoApi.CreateDocument('fileUploader', fileDetails);
+          setUploadStatus('File uploaded successfully!');
+  
+          // Update the file list with the new file details
+          setFileList(prevList => [...prevList, fileDetails]);
+        } else {
+          setUploadStatus('Error uploading file.');
+        }
+      } catch (error) {
+        setUploadStatus('Error uploading file.');
+        console.error('Error uploading file:', error);
+      }
+    };
 
   return (
     <div className="max-w-lg mx-auto bg-white p-6 shadow-md rounded-lg mt-10">
@@ -78,7 +110,6 @@ const FileUpload = () => {
         </p>
       )}
 
-     
       <FileTable recentFiles={fileList} />
     </div>
   );

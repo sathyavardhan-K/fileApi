@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DomoApi from '../Domoapi/Api';
 
@@ -14,13 +14,26 @@ const FileTable = ({ recentFiles }) => {
   const [uploadStatus, setUploadStatus] = useState('');
   const [fileList, setFileList] = useState([]);
 
+  // Set the initial file list
+  useEffect(() => {
+    if (recentFiles) {
+      setFileList(recentFiles);
+    }
+  }, [recentFiles]);
+
   // Handle file delete
   const handleDelete = async (fileId) => {
+    if (!fileId) {
+      setUploadStatus('Error: File ID is missing.');
+      return;
+    }
+
     try {
       const response = await DomoApi.DeleteDocument('fileUploader', fileId);
-      if (response.status === 200) {
+      if (response) {
         setUploadStatus('File deleted successfully!');
-        setFileList(fileList.filter((file) => file.id !== fileId));
+        // Update fileList by filtering out the deleted file
+        setFileList((prevList) => prevList.filter((file) => file.id !== fileId));
       }
     } catch (error) {
       setUploadStatus('Error deleting file.');
@@ -41,11 +54,11 @@ const FileTable = ({ recentFiles }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-800">
-            {(recentFiles || []).map((file) => (
+            {(fileList || []).map((file) => (
               <tr key={file.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                <td className="p-4 text-sm text-gray-800 dark:text-gray-300">{file.name}</td>
+                <td className="p-4 text-sm text-gray-800 dark:text-gray-300">{file.fileName}</td>
                 <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
-                  {formatFileSize(file.size)}
+                  {formatFileSize(file.fileSize)}
                 </td>
                 <td className="p-4">
                   <DeleteIcon
